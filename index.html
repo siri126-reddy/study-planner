@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StudyPortal AI - Student & Parent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2 style="text-align:center; color: var(--primary); margin-bottom: 10px;">StudyPortal AI</h2>
+    <div class="tabs">
+      <div class="tab-btn active" id="tab-student-btn" onclick="switchAuthTab('student')">Student Login</div>
+      <div class="tab-btn" id="tab-parent-btn" onclick="switchAuthTab('parent')">Parent Login</div>
+    </div>
+
+    <form id="student-form" class="auth-form active" onsubmit="event.preventDefault(); studentAuth();">
+      <input type="text" id="student-user" placeholder="Student Username" required />
+      <input type="password" id="student-pass" placeholder="Password" required />
+      <button class="action" type="submit">Login</button>
+      <p style="font-size: 13px; text-align:center; margin-top: 15px;">
+        Don't have an account? <a href="#" onclick="showStudentRegister()" style="color: var(--primary); text-decoration: none;">Create one</a>
+      </p>
+    </form>
+
+    <form id="student-register-form" class="auth-form" onsubmit="event.preventDefault(); studentRegister();">
+      <input type="text" id="sreg-user" placeholder="New Student Username" required />
+      <input type="password" id="sreg-pass" placeholder="New Password" required />
+      <input type="text" id="sreg-name" placeholder="Full Name" required />
+      <input type="text" id="sreg-std" placeholder="Grade/Standard" />
+      <input type="number" id="sreg-gpa" placeholder="Current GPA" step="0.01" min="0" max="10" />
+      <button class="action" type="submit">Register</button>
+      <p style="font-size: 13px; text-align:center; margin-top: 15px;">
+        Already have an account? <a href="#" onclick="showStudentLogin()" style="color: var(--primary); text-decoration: none;">Login here</a>
+      </p>
+    </form>
+
+    <form id="parent-form" class="auth-form" onsubmit="event.preventDefault(); parentAuth();">
+      <input type="text" id="parent-user" placeholder="Parent Username" required />
+      <input type="password" id="parent-pass" placeholder="Password" required />
+      <button class="action" type="submit">Login</button>
+      <p style="font-size: 13px; text-align:center; margin-top: 15px;">
+        Don't have an account? <a href="#" onclick="showParentRegister()" style="color: var(--primary); text-decoration: none;">Create one</a>
+      </p>
+    </form>
+
+    <form id="parent-register-form" class="auth-form" onsubmit="event.preventDefault(); parentRegister();">
+      <input type="text" id="preg-user" placeholder="New Parent Username" required />
+      <input type="password" id="preg-pass" placeholder="New Password" required />
+      <input type="text" id="preg-name" placeholder="Parent Name" required />
+      <input type="text" id="preg-link-id" placeholder="Ward ID (Student Username)" required />
+      <button class="action" type="submit">Register</button>
+      <p style="font-size: 13px; text-align:center; margin-top: 15px;">
+        Already have an account? <a href="#" onclick="showParentLogin()" style="color: var(--primary); text-decoration: none;">Login here</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<div class="app hidden" id="app-body">
+  <aside>
+    <div class="logo" style="font-weight:700; color:var(--primary); margin-bottom:20px;">STUDYPORTAL</div>
+    <div class="user-info" id="side-profile"></div>
+    <nav>
+      <button class="nav active" onclick="showPage('dashboard',this)">Dashboard</button>
+      <button class="nav" onclick="showPage('planner',this)">Study Planner</button>
+      <button class="nav" onclick="showPage('timetable',this)">Timetable</button>
+      <button class="nav student-only" onclick="showPage('summarizer',this)">Summarizer</button>
+      <button class="nav" onclick="showPage('streak',this)">Streak</button>
+      <button class="nav" onclick="showPage('progress',this)">📊 My Progress</button>
+      <button class="nav student-only" onclick="showPage('test',this)">📝 Take Test</button>
+    </nav>
+    <button onclick="logout()" style="margin-top:auto; color:#ef4444; border:none; background:none; cursor:pointer; font-weight:600;">Logout</button>
+  </aside>
+
+  <main>
+    <h1 id="page-title">Dashboard</h1>
+
+    <div id="dashboard" class="page">
+      <div class="hero"><h2>Welcome Back!</h2><p id="welcome-sub">Your portal is synchronized with real-time data.</p></div>
+      <div class="card">
+        <h3>Academic Overview</h3>
+        <p style="margin-top:10px;">Subjects: <strong id="subjectCount">0</strong> | GPA: <strong id="gpa-display">0.0</strong></p>
+      </div>
+      <div class="card">
+        <h3>Recent Test Results</h3>
+        <div id="testHistoryList"><p style="color:var(--muted); font-size: 13px;">No tests completed yet.</p></div>
+      </div>
+    </div>
+
+    <div id="planner" class="page hidden">
+      <div class="card student-only">
+        <h3>Add Your Subjects</h3>
+        <div style="display:flex; gap:10px;">
+          <input id="subjectInput" placeholder="e.g. Math, Physics..." />
+          <button class="action" style="width:100px;" onclick="addSubject()">Add</button>
+        </div>
+        <div id="subjectList" style="margin-top:15px;"></div>
+      </div>
+      <div class="card">
+        <h3>AI Study Plan</h3>
+        <button class="action student-only" style="background:var(--success);" onclick="generatePlan()">Generate Smart Strategy</button>
+        <div id="planOutput" style="margin-top:20px;">
+          <p style="color:var(--muted); text-align:center;">No plan generated yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="timetable" class="page hidden">
+      <div class="card">
+        <h3>Time Schedule</h3>
+        <div class="student-only">
+          <div style="display:flex; gap:10px;">
+            <div><small>Start Time</small><input type="time" id="startTime" value="08:00" /></div>
+            <div><small>End Time</small><input type="time" id="endTime" value="15:00" /></div>
+          </div>
+          <button class="action" onclick="generateTimetable()">Generate Weekly Table</button>
+        </div>
+        <div id="ttOutput" style="overflow-x: auto; margin-top: 15px;">
+          <p style="color:var(--muted); text-align:center;">No timetable generated yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="summarizer" class="page hidden">
+      <div class="card">
+        <h3>AI Text Summarizer</h3>
+        <textarea id="sumInput" rows="8" placeholder="Paste complex text or paragraphs here..."></textarea>
+        <button class="action" onclick="summarize()">Break into Simple Points</button>
+        <div id="sumOutput" style="margin-top:15px; background:#f1f5f9; padding:20px; border-radius:8px; border: 1px dashed var(--border);"></div>
+      </div>
+    </div>
+
+    <div id="streak" class="page hidden">
+      <div class="card" style="text-align:center;">
+        <h2 id="streakText" style="font-size: 50px;">🔥 0</h2>
+        <p>Days Streak</p>
+        <div class="student-only">
+          <button class="action" style="width:auto; padding:10px 30px;" onclick="markStudied()">I Studied Today</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="progress" class="page hidden">
+      <div class="card">
+        <h3>Weekly Momentum</h3>
+        <div class="progress-container"><div id="mainProgressBar" class="progress-bar"></div></div>
+        <p id="progressText" style="font-size: 13px; color: var(--muted);">0% of weekly goal achieved</p>
+        <div class="stat-grid">
+            <div class="stat-box"><h4 id="statStreak">0</h4><p style="font-size:11px; color: var(--muted);">Active Streak</p></div>
+            <div class="stat-box"><h4 id="statTests">0</h4><p style="font-size:11px; color: var(--muted);">Tests Taken</p></div>
+        </div>
+      </div>
+      <div class="card">
+          <h3>Subject Mastery</h3>
+          <div id="masteryList"></div>
+      </div>
+    </div>
+
+    <div id="test" class="page hidden">
+      <div class="card" id="test-config-view">
+        <h3>Configure Your Test</h3>
+        <label>Select Subject:</label>
+        <select id="testSubjectSelect"></select>
+        <input type="number" id="testQuestionCount" value="3" min="1" max="5" />
+        <button class="action" onclick="startNewTest()">Generate Test</button>
+      </div>
+      <div class="card hidden" id="test-active-view">
+        <h3 id="activeTestTitle">Test in Progress</h3>
+        <div id="dynamicQuestionsContainer"></div>
+        <button class="action" style="background:var(--success);" onclick="submitDynamicTest()">Submit Answers</button>
+      </div>
+      <div class="card hidden" id="test-result-view" style="text-align: center;">
+        <div style="font-size: 40px;">🏆</div>
+        <h2 id="testScoreDisplay">Score: 0/0</h2>
+        <button class="action" onclick="resetTest()">Take New Test</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
